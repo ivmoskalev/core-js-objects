@@ -396,32 +396,63 @@ function group(array, keySelector, valueSelector) {
  */
 
 const cssSelectorBuilder = {
-  element(/* value */) {
-    throw new Error('Not implemented');
+  selector: '',
+  order: 0,
+  error: '',
+
+  validateOrder(order) {
+    if (order < this.order) {
+      throw new Error(
+        'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element'
+      );
+    }
+    if (order === this.order && [1, 2, 6].includes(order)) {
+      throw new Error(
+        'Element, id and pseudo-element should not occur more then one time inside the selector'
+      );
+    }
+    return { ...this, order };
   },
 
-  id(/* value */) {
-    throw new Error('Not implemented');
+  element(value) {
+    return this.validateOrder(1).updateSelector(`${value}`);
   },
 
-  class(/* value */) {
-    throw new Error('Not implemented');
+  id(value) {
+    return this.validateOrder(2).updateSelector(`#${value}`);
   },
 
-  attr(/* value */) {
-    throw new Error('Not implemented');
+  class(value) {
+    return this.validateOrder(3).updateSelector(`.${value}`);
   },
 
-  pseudoClass(/* value */) {
-    throw new Error('Not implemented');
+  attr(value) {
+    return this.validateOrder(4).updateSelector(`[${value}]`);
   },
 
-  pseudoElement(/* value */) {
-    throw new Error('Not implemented');
+  pseudoClass(value) {
+    return this.validateOrder(5).updateSelector(`:${value}`);
   },
 
-  combine(/* selector1, combinator, selector2 */) {
-    throw new Error('Not implemented');
+  pseudoElement(value) {
+    return this.validateOrder(6).updateSelector(`::${value}`);
+  },
+
+  combine(selector1, combinator, selector2) {
+    const combinedSelector = `${selector1.stringify()} ${combinator} ${selector2.stringify()}`;
+    return { ...cssSelectorBuilder, selector: combinedSelector };
+  },
+
+  updateSelector(part) {
+    return { ...this, selector: `${this.selector}${part}` };
+  },
+
+  stringify() {
+    return this.selector;
+  },
+
+  init() {
+    return { ...cssSelectorBuilder, selector: '', order: 0, error: '' };
   },
 };
 
