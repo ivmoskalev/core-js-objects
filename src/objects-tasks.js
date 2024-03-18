@@ -136,8 +136,21 @@ function makeImmutable(obj) {
  *    makeWord({ a: [0, 1], b: [2, 3], c: [4, 5] }) => 'aabbcc'
  *    makeWord({ H:[0], e: [1], l: [2, 3, 8], o: [4, 6], W:[5], r:[7], d:[9]}) => 'HelloWorld'
  */
-function makeWord(/* lettersObject */) {
-  throw new Error('Not implemented');
+function makeWord(lettersObject) {
+  const positionPairs = Object.entries(lettersObject).flatMap(
+    ([letter, positions]) => positions.map((position) => [position, letter])
+  );
+
+  const sortedPositionPairs = positionPairs.sort(
+    ([posA], [posB]) => posA - posB
+  );
+
+  const word = sortedPositionPairs.reduce(
+    (acc, [, letter]) => acc + letter,
+    ''
+  );
+
+  return word;
 }
 
 /**
@@ -154,8 +167,44 @@ function makeWord(/* lettersObject */) {
  *    sellTickets([25, 25, 50]) => true
  *    sellTickets([25, 100]) => false (The seller does not have enough money to give change.)
  */
-function sellTickets(/* queue */) {
-  throw new Error('Not implemented');
+function sellTickets(queue) {
+  const canSell = queue.reduce(
+    (cash, bill) => {
+      if (cash === false) return false;
+      const sellerCash = cash;
+      switch (bill) {
+        case 25:
+          sellerCash[25] += 1;
+          break;
+        case 50:
+          if (sellerCash[25] > 0) {
+            sellerCash[25] -= 1;
+            sellerCash[50] += 1;
+          } else {
+            return false;
+          }
+          break;
+        case 100:
+          if (sellerCash[50] > 0 && sellerCash[25] > 0) {
+            sellerCash[50] -= 1;
+            sellerCash[25] -= 1;
+          } else if (sellerCash[25] >= 3) {
+            sellerCash[25] -= 3;
+          } else {
+            return false;
+          }
+          break;
+        default:
+          return false;
+      }
+
+      return cash;
+    },
+    { 25: 0, 50: 0 }
+  ); // Initial cash in hand
+
+  // If the result is an object, we could make change for everyone
+  return typeof canSell === 'object';
 }
 
 /**
@@ -171,8 +220,14 @@ function sellTickets(/* queue */) {
  *    console.log(r.height);      // => 20
  *    console.log(r.getArea());   // => 200
  */
-function Rectangle(/* width, height */) {
-  throw new Error('Not implemented');
+function Rectangle(width, height) {
+  return {
+    width,
+    height,
+    getArea() {
+      return this.width * this.height;
+    },
+  };
 }
 
 /**
